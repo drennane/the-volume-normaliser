@@ -1,2 +1,1 @@
-include ':app', ':myapplication'
-include ':iBMAudio'
+include ':app'
