@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    >
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal">
+        <Button
+            android:id="@+id/buttonPower"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:onClick="irSend"
+            android:text="POWER"/>
+        <Button
+            android:id="@+id/buttonMute"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:onClick="irSend"
+            android:text="MUTE" />
+        </LinearLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal">
+        <Button
+            android:id="@+id/buttonChUp"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:onClick="irSend"
+            android:text="CH +" />
+
+        <Button
+            android:id="@+id/buttonChDown"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:onClick="irSend"
+            android:text="CH -" />
+    </LinearLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal">
+        <Button
+            android:id="@+id/buttonVolUp"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:onClick="irSend"
+            android:text="VOL +" />
+
+        <Button
+            android:id="@+id/buttonVolDown"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:onClick="irSend"
+            android:text="VOL -" />
+    </LinearLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal">
+        <Button
+            android:id="@+id/buttonLockLevel"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="LOCK LEVEL" />
+
+        <Button
+            android:id="@+id/buttonClear"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="RESET/CLEAR" />
+    </LinearLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="center_horizontal">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:id="@+id/threshold"
+            />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        >
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            >
+
+            <ImageView
+                android:id="@+id/activity_led"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10sp"
+                android:visibility="invisible"
+                android:src="@android:drawable/ic_notification_overlay"
+                />
+            <com.drenit.thevolumenormaliser.SoundLevelView
+                android:id="@+id/volume"
+                android:layout_width="43sp"
+                android:layout_height="230sp"
+                android:layout_centerInParent="true"
+                />
+
+        </LinearLayout>
+    </RelativeLayout>
+
+</LinearLayout>

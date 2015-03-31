@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">TheVolumeNormaliser</string>
+    <string name="settings">Settings</string>
+    <string name="threshold">Threshold</string>
+    <string name="call_number">Callout Number</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="test">Test</string>
+    <string name="panic">Panic</string>
+    <string name="help">Help</string>
+    <string name="stopped">stopped...</string>
+
+    <string name="ir_send">Send IR</string>
+    <string name="ir_get_freqs">Get Carrier Frequencies</string>
+
+    <string name="alert_heading">Alert Settings</string>
+    <string name="power_heading">Power save settings</string>
+    <string name="alert_phone">Alert Phone Number</string>
+    <string name="alert_phone_summary">Dial this number when sound activity is detected</string>
+    <string name="sound_threshold">Sound Threshold</string>
+    <string name="sound_threshold_summary">Sound level at which to dial alert number</string>
+    <string name="security_code">SMS Remote Security Code</string>
+    <string name="security_code_summary">Security code to send in SMS messages for remote control commands</string>
+    <string name="sleep">Sleep Interval</string>
+    <string name="sleep_summary">Periodically suspend monitoring</string>
+    <string name="display_update">Enable Graphics</string>
+    <string name="display_update_summary">Enable graphical volume meter</string>
+    <string name="no_num_title">Missing Number</string>
+    <string name="no_num_msg">No alert phone number has been set!</string>
+    <string name="ok">ok</string>
+    <string name="help_title">NoiseAlert Help</string>
+    <string name="help_text">
+    \n
+    \n<big><b>NoiseAlert</b> travel baby monitor</big>\n
+    \n
+    In combination with a second phone, NoiseAlert can turn an Android cellphone into an improvised baby monitor.
+    When running, NoiseAlert monitors the surrounding noise level through the microphone and if the noise exceeds a
+    configured threshold for more than a few seconds, it calls a pre-configured number.\n
+    \n
+    <b>Usage</b>\n
+    In order to use NoiseAlert, first configure the correct alert phone number to be called in \"Settings->
+    Alert Phone Number\" and test that it will indeed ring the right phone, but selecting \"Panic\" from the menu.
+    Then turn down the ringer volume until it switches into silent mode, to avoid incoming ring or alerts
+    setting off the monitor - or disturb a sleeping baby. The place the monitor at a safe distance, but in the
+    same room with the sleeping child, dog or whatever it is you are trying to monitor. Ideally put the phone on
+    charger, since running the monitor will keep the phone awake. If necessary use the \"Test\" menu option to verify
+    that the current ambient noise level does not set off the alert and if possibly adjust the threshold in
+    \"Settings->Sound Threshold\". The choose \"Start\" from the menu and verify that the red monitoring light
+    is blinking on the display before leaving the room.\n
+    \n
+    The monitor will automatically de-activate itself after an alert has been triggered or if the user navigates
+    away from the main screen, while the monitor is running. The monitor can also be de-activated using the
+    \"Stop\" option from the menu.\n
+    \n
+    <b>Warning</b>\n
+    Please be aware that cellphone service can be unreliable at times, this application or the phone in general
+    could easily malfunction. It should only be used when such failures can be tolerated without causing any
+    serious danger.\n
+    Please be also aware that there is a reason why commercial wireless baby monitors only have a short enough
+    reach, that you would not really need them. Before going to far from an unattended child, always consider
+    some worst-case scenario like fire breaking out in the building or a power outage. Depending on the situation,
+    only go as far as you could get back very quickly in any situation, e.g. even if the elevators are no
+    longer working.\n
+ 	\n
+ 	<b>SMS remote control</b> (experimental only)\n
+ 	By setting a \"secret\" password code in \"Settings->SMS Remote Security Code\", you can activate a limited
+ 	SMS based remote control function which is active only when the application is running. If you send an SMS to
+ 	the phone, starting with the security code, followed by either of the commands \"start\", \"stop\", \"panic\",
+ 	the equivalent menu command is executed.
+    \n
+    More information, including the source code can be found at http://android-labs.googlecode.com/\n
+    \n
+    For any comments or questions please contact android@kugelfish.com\n
+    \n
+    Enjoy!\n
+    </string>
+
+</resources>
