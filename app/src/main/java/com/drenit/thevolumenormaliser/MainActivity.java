@@ -1,12 +1,9 @@
 package com.drenit.thevolumenormaliser;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.ConsumerIrManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,7 +15,6 @@ import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -29,7 +25,7 @@ import java.util.List;
 import java.util.prefs.Preferences;
 
 
-public class MainActivity extends ActionBarActivity implements SmsRemote.SmsRemoteReceiver {
+public class MainActivity extends ActionBarActivity {
 
     private static final int ANDROID_KITKAT_SDK = 19;
 
@@ -37,14 +33,18 @@ public class MainActivity extends ActionBarActivity implements SmsRemote.SmsRemo
 
     /* constants */
     private static final String LOG_TAG = "MainActivity";
-    private static final int POLL_INTERVAL = 1000;
-    private static final int PRESET_TOLERANCE_PERCENTAGE = 5;
+    private static final int POLL_INTERVAL = 500;
+    private static final int PRESET_TOLERANCE_PERCENTAGE = 50;
 
     /** running state **/
     private boolean mAutoResume = false;
     private boolean mRunning = false;
     private int mTickCount = 0;
-    private int mHighCount =0;
+    private double lastAmpValue = 0;
+    private int lastPolarity = 0;
+    private int breachTick =0;
+
+    private int mBreachCount =0;
     private int mLowCount =0;
 
     /** config state **/
@@ -79,25 +79,40 @@ public class MainActivity extends ActionBarActivity implements SmsRemote.SmsRemo
         mCIR = (ConsumerIrManager) getSystemService(Context.CONSUMER_IR_SERVICE);
         Log.e(LOG_TAG, "mCIR.hasIrEmitter(): " + mCIR.hasIrEmitter());
 
-        irData = new SparseArray<String>();
+        irData = new SparseArray<>();
         irData.put(
                 R.id.buttonPower,
-                hex2dec("0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0040 0015 0015 0015 003f 0015 003f 0015 003f 0015 003f 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e"));
+//  Samsung
+                "0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0040 0015 0015 0015 003f 0015 003f 0015 003f 0015 003f 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e");
+// Logik                hex2dec("0000 006C 0022 0002 015B 00AD 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0016 0016 0016 0016 0041 0016 0041 0016 0041 0016 0016 0016 0016 0016 0016 0016 0041 0016 0041 0016 0016 0016 0016 0016 0016 0016 0041 0016 0041 0016 0041 0016 0699 015B 0057 0016 0EA3"));
         irData.put(
                 R.id.buttonMute,
-                hex2dec("0000 006c 0022 0003 00ab 00aa 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 003f 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0714 00ab 00aa 0015 0015 0015 0e91"));
+//Samsung
+                "0000 006c 0022 0003 00ab 00aa 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 003f 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0714 00ab 00aa 0015 0015 0015 0e91");
+// Logik                hex2dec("0000 006C 0022 0002 015B 00AD 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0699 015B 0057 0016 0EA3"));
         irData.put(
                 R.id.buttonChUp,
-                hex2dec("0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 0015 0015 003f 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 003f 0015 003f 0015 0015 0015 0040 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e"));
+// Samsung
+                "0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 0015 0015 003f 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 003f 0015 003f 0015 0015 0015 0040 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e");
+// Logik               hex2dec("0000 006C 0022 0002 015B 00AD 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0699 015B 0057 0016 0EA3"));
+
         irData.put(
                 R.id.buttonChDown,
-                hex2dec("0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 003f 0015 0015 0015 003f 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e"));
+// Samsung
+                "0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 003f 0015 0015 0015 003f 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e");
+//Logik               hex2dec("0000 006C 0022 0002 015B 00AD 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0041 0016 0041 0016 0699 015B 0057 0016 0EA3"));
+
         irData.put(
                 R.id.buttonVolUp,
-                hex2dec("0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e"));
+// Samsung
+                "0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e");
+//Logik                hex2dec("0000 006C 0022 0002 015B 00AD 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0699 015B 0057 0016 0EA3"));
+
         irData.put(
-                R.id.buttonVolDown,
-                hex2dec("0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 0015 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 003f 0015 003f 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e"));
+                  R.id.buttonVolDown,
+// Samsung
+                  "0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 0015 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 003f 0015 003f 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e");
+//Logik                hex2dec("0000 006C 0022 0002 015B 00AD 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0016 0016 0041 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0699 015B 0057 0016 0EA3"));
 
 
         mActivityLed = (ImageView) findViewById(R.id.activity_led);
@@ -148,6 +163,15 @@ public class MainActivity extends ActionBarActivity implements SmsRemote.SmsRemo
         }
 
         String data = irData.get(irDataIndex);
+        int lastIdx = Build.VERSION.RELEASE.lastIndexOf(".");
+        int VERSION_MR = Integer.valueOf(Build.VERSION.RELEASE.substring(lastIdx+1));
+        if (VERSION_MR < 3) {
+            // Before version of Android 4.4.2
+            data = hex2dec(data);
+        } else {
+            // Later version of Android 4.4.3
+            data = count2duration(data);
+        }
         if (data != null) {
             String values[] = data.split(",");
             int[] pattern = new int[values.length-1];
@@ -157,17 +181,7 @@ public class MainActivity extends ActionBarActivity implements SmsRemote.SmsRemo
             for (int i=0; i<pattern.length; i++){
                 pattern[i] = Integer.parseInt(values[i+1]);
             }
-
-            int lastIdx = Build.VERSION.RELEASE.lastIndexOf(".");
-            int VERSION_MR = Integer.valueOf(Build.VERSION.RELEASE.substring(lastIdx+1));
-            if (VERSION_MR < 3) {
-                // Before version of Android 4.4.2
-                mCIR.transmit(frequency, pattern);
-            } else {
-                // Later version of Android 4.4.3
-                //@todo process the pattern with count2duration
-                mCIR.transmit(frequency, pattern);
-            }
+            mCIR.transmit(frequency, pattern);
         }
 
 
@@ -295,8 +309,8 @@ public class MainActivity extends ActionBarActivity implements SmsRemote.SmsRemo
 
     private void start() {
         mTickCount = 0;
-        mHighCount = 0;
-        mLowCount = 0;
+        lastAmpValue = 0;
+        breachTick = 0;
         try {
             mSensor.start();
         } catch (IOException e) {
@@ -345,43 +359,65 @@ public class MainActivity extends ActionBarActivity implements SmsRemote.SmsRemo
         public void run() {
 
             double amp = mSensor.getAmplitude();
+            Log.i(LOG_TAG, "\n\nThreshold: "+mThreshold);
             Log.i(LOG_TAG, "Current AMP: "+amp);
             updateDisplay(amp);
             // Show threshold in the view
             mThresholdView.setText(String.valueOf(mThreshold));
 
             // Check if % difference exceeds a preset tolerance
-            if (amp > mThresholdMax) {
-                mHighCount++;
-                Log.i(LOG_TAG, String.format("High %d :: Amp: %f", mHighCount, amp));
-                if (mHighCount > 5){
+            double percentageDifference = ((amp - mThreshold)/mThreshold) * 100;
+            Log.i(LOG_TAG, "Percentage Difference: ["+percentageDifference+"]");
+
+            int thisPolarity = checkPolarity(percentageDifference);
+
+            if(Math.abs(percentageDifference) > PRESET_TOLERANCE_PERCENTAGE){
+                // If polarity has changed, reset breach count
+                if(thisPolarity != lastPolarity) mBreachCount = 0;
+                mBreachCount++;
+                Log.i(LOG_TAG, "BreachCount: ["+mBreachCount+"]");
+
+                if(mBreachCount > 5){
+                    if(thisPolarity > 0){
+                        Log.i(LOG_TAG, "HIGH! TURN DOWN!");
+                        irSend(R.id.buttonVolDown);
+                    }else{
+                        Log.i(LOG_TAG, "LOW! TURN UP!");
+                        irSend(R.id.buttonVolUp);
+                    }
+                    mBreachCount--;
+                }
+            }
+
+            // Set lastPolarity
+            lastPolarity = thisPolarity;
+
+            /*if (amp > mThresholdMax) {
+                lastAmpValue++;
+                Log.i(LOG_TAG, String.format("High %d :: Amp: %f", lastAmpValue, amp));
+                if (lastAmpValue > 5){
                     // Turn down the TV
                     Log.i(LOG_TAG, "Turn down the TV");
                     mThresholdView.setText("Turn down the TV");
                     irSend(R.id.buttonVolDown);
                     // Reset the count
-                    mHighCount = 0;
+                    lastAmpValue = 0;
                 }
-            }
-
-            if (amp < mThreshold) {
-                mLowCount++;
-                Log.i(LOG_TAG, String.format("Low %d :: Amp: %f", mLowCount, amp));
-                if (mLowCount > 5){
-                    // Turn down the TV
-                    Log.i(LOG_TAG, "Turn up the TV");
-                    mThresholdView.setText("Turn up the TV");
-                    irSend(R.id.buttonVolUp);
-                    mLowCount = 0;
-                }
-            }
+            }*/
 
             mTickCount++;
             setActivityLed(mTickCount % 2 == 0);
 
+            // Set last amp value to current
+            lastAmpValue = amp;
             mHandler.postDelayed(mPollTask, POLL_INTERVAL);
         }
     };
+
+    int checkPolarity(double value){
+        if(value == 0) return 0;
+        return value > 0 ? 1 : -1;
+    }
 
     private void stop() {
         if (mWakeLock.isHeld()) {
