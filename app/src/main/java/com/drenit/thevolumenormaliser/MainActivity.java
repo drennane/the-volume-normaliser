@@ -170,7 +170,7 @@ public class MainActivity extends ActionBarActivity {
             data = hex2dec(data);
         } else {
             // Later version of Android 4.4.3
-            data = count2duration(data);
+            data = count2duration(hex2dec(data));
         }
         if (data != null) {
             String values[] = data.split(",");
