@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.ConsumerIrManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -137,7 +138,8 @@ public class MainActivity extends ActionBarActivity {
                 return;
             }
             Log.i(LOG_TAG, "LOCKING VOLUME LEVEL..");
-            start();
+//            start();
+            new ReadCurrentLevel().execute();
         }
     };
 
@@ -241,7 +243,7 @@ public class MainActivity extends ActionBarActivity {
         readApplicationPreferences();
         mDisplay.setLevel(0, mThreshold);
         if (mAutoResume) {
-            start();
+            new ReadCurrentLevel().execute();
         }
     }
 
@@ -268,15 +270,14 @@ public class MainActivity extends ActionBarActivity {
         switch(item.getItemId()) {
             case R.id.settings:
                 Log.i(LOG_TAG, "settings");
-                Intent prefs = new Intent(this, Preferences.class);
+                Intent prefs = new Intent(this, AppPreferences.class);
                 startActivity(prefs);
                 break;
             case R.id.start_stop:
                 if (!mRunning) {
-
                     mAutoResume = true;
                     mRunning = true;
-                    start();
+//                    start();
                 } else {
                     mAutoResume = false;
                     mRunning = false;
@@ -284,7 +285,7 @@ public class MainActivity extends ActionBarActivity {
                 }
                 break;
             case R.id.test:
-                start();
+//                start();
                 break;
             case R.id.panic:
 //                callForHelp();
@@ -305,54 +306,6 @@ public class MainActivity extends ActionBarActivity {
             mRunning = false;
             stop();
         }
-    }
-
-    private void start() {
-        mTickCount = 0;
-        lastAmpValue = 0;
-        breachTick = 0;
-        try {
-            mSensor.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        //@todo this should obviously be done in a non blocking thread
-        if(!mThresholdSet){
-            // Value not set, set threshold based on current volume
-            boolean notSet = true;
-            int count = 1;
-            double summedAmplitude = 0;
-            while (notSet){
-                double thisAmplitude = mSensor.getAmplitude();
-                summedAmplitude += thisAmplitude;
-                if(thisAmplitude > mThresholdMax)
-                {
-                    mThresholdMax = thisAmplitude;
-                    Log.i(LOG_TAG, String.format("New Max: %f", thisAmplitude));
-                }
-                try{
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                // Set to 10 seconds
-                Log.i(LOG_TAG, String.format("Setting level :: count: [%d] :: Sum: [%f] :: Amplitude: [%f]", count, summedAmplitude, thisAmplitude));
-                if(count++ == 10){
-                    notSet = false;
-                }
-            }
-            // Get average amplitude over "count - 1" seconds (count will have been incremented post operation above)
-            mThreshold = summedAmplitude / (count - 1);
-            // Show threshold in the view
-            mThresholdView.setText(String.valueOf(mThreshold));
-            Log.i(LOG_TAG, String.format("Max Amp: [%f] ::: Av Amp: [%f]", mThresholdMax, mThreshold));
-
-        }
-        setActivityLed(true);
-        if (!mWakeLock.isHeld()) {
-            mWakeLock.acquire();
-        }
-        mHandler.postDelayed(mPollTask, POLL_INTERVAL);
     }
 
     private Runnable mPollTask = new Runnable() {
@@ -391,19 +344,6 @@ public class MainActivity extends ActionBarActivity {
 
             // Set lastPolarity
             lastPolarity = thisPolarity;
-
-            /*if (amp > mThresholdMax) {
-                lastAmpValue++;
-                Log.i(LOG_TAG, String.format("High %d :: Amp: %f", lastAmpValue, amp));
-                if (lastAmpValue > 5){
-                    // Turn down the TV
-                    Log.i(LOG_TAG, "Turn down the TV");
-                    mThresholdView.setText("Turn down the TV");
-                    irSend(R.id.buttonVolDown);
-                    // Reset the count
-                    lastAmpValue = 0;
-                }
-            }*/
 
             mTickCount++;
             setActivityLed(mTickCount % 2 == 0);
@@ -457,8 +397,72 @@ public class MainActivity extends ActionBarActivity {
 
     private Runnable mSleepTask = new Runnable() {
         public void run() {
-            start();
+//            start();
         }
     };
+
+    private class ReadCurrentLevel extends AsyncTask<Void, Void, Double> {
+
+        @Override
+        protected void onPreExecute() {
+        }
+
+        @Override
+        protected Double doInBackground(Void... params) {
+            mTickCount = 0;
+            lastAmpValue = 0;
+            breachTick = 0;
+            try {
+                mSensor.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if(!mThresholdSet){
+                // Value not set, set threshold based on current volume
+                boolean notSet = true;
+                int count = 1;
+                double summedAmplitude = 0;
+                while (notSet){
+                    double thisAmplitude = mSensor.getAmplitude();
+                    summedAmplitude += thisAmplitude;
+                    if(thisAmplitude > mThresholdMax)
+                    {
+                        mThresholdMax = thisAmplitude;
+                        Log.i(LOG_TAG, String.format("New Max: %f", thisAmplitude));
+                    }
+                    try{
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    // Set to 10 seconds
+                    Log.i(LOG_TAG, String.format("Setting level :: count: [%d] :: Sum: [%f] :: Amplitude: [%f]", count, summedAmplitude, thisAmplitude));
+                    if(count++ == 10){
+                        notSet = false;
+                    }
+                }
+                // Get average amplitude over "count - 1" seconds (count will have been incremented post operation above)
+                mThreshold = summedAmplitude / (count - 1);
+                // Show threshold in the view
+                Log.i(LOG_TAG, String.format("Max Amp: [%f] ::: Av Amp: [%f]", mThresholdMax, mThreshold));
+            }
+            if (!mWakeLock.isHeld()) {
+                mWakeLock.acquire();
+            }
+            return mThreshold;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            // Update info
+        }
+
+        @Override
+        protected void onPostExecute(Double threshold) {
+            setActivityLed(true);
+            mThresholdView.setText(String.valueOf(threshold));
+            mHandler.postDelayed(mPollTask, POLL_INTERVAL);
+        }
+    }
 
 }

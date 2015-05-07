@@ -19,7 +19,7 @@ package com.drenit.thevolumenormaliser;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
-public class Preferences extends PreferenceActivity {
+public class AppPreferences extends PreferenceActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
