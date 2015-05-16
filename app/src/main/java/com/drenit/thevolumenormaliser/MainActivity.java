@@ -29,6 +29,7 @@ import java.util.prefs.Preferences;
 public class MainActivity extends ActionBarActivity {
 
     private static final int ANDROID_KITKAT_SDK = 19;
+    private static final int SAMPLE_TIME = 10;
 
     SparseArray<String> irData;
 
@@ -121,7 +122,7 @@ public class MainActivity extends ActionBarActivity {
 
 
         mSensor = new SoundMeter();
-        mDisplay = (SoundLevelView) findViewById(R.id.volume);
+
 
         findViewById(R.id.buttonLockLevel).setOnClickListener(mLockListener);
         findViewById(R.id.buttonClear).setOnClickListener(mClearListener);
@@ -153,98 +154,11 @@ public class MainActivity extends ActionBarActivity {
         }
     };
 
-    public void irSend(View view) {
-        irSend(view.getId());
-    }
-
-    public void irSend(int irDataIndex) {
-
-        if (!mCIR.hasIrEmitter()) {
-            Log.e(LOG_TAG, "No IR Emitter found\n");
-            return;
-        }
-
-        String data = irData.get(irDataIndex);
-        int lastIdx = Build.VERSION.RELEASE.lastIndexOf(".");
-        int VERSION_MR = Integer.valueOf(Build.VERSION.RELEASE.substring(lastIdx+1));
-        if (VERSION_MR < 3) {
-            // Before version of Android 4.4.2
-            data = hex2dec(data);
-        } else {
-            // Later version of Android 4.4.3
-            data = count2duration(hex2dec(data));
-        }
-        if (data != null) {
-            String values[] = data.split(",");
-            int[] pattern = new int[values.length-1];
-            int frequency = Integer.parseInt(values[0]);
-
-            //@todo Start index at 1??
-            for (int i=0; i<pattern.length; i++){
-                pattern[i] = Integer.parseInt(values[i+1]);
-            }
-            mCIR.transmit(frequency, pattern);
-        }
-
-
-    }
-
-    protected String hex2dec(String irData) {
-        List<String> list = new ArrayList<String>(Arrays.asList(irData
-                .split(" ")));
-        list.remove(0); // dummy
-        int frequency = Integer.parseInt(list.remove(0), 16); // frequency
-        list.remove(0); // seq1
-        list.remove(0); // seq2
-
-        for (int i = 0; i < list.size(); i++) {
-            list.set(i, Integer.toString(Integer.parseInt(list.get(i), 16)));
-        }
-
-        frequency = (int) (1000000 / (frequency * 0.241246));
-        list.add(0, Integer.toString(frequency));
-
-        irData = "";
-        for (String s : list) {
-            irData += s + ",";
-        }
-        return irData;
-    }
-
-    protected String count2duration(String countPattern) {
-        List<String> list = new ArrayList<String>(Arrays.asList(countPattern.split(" ")));
-        int frequency = Integer.parseInt(list.get(0));
-        int pulses = 1000000/frequency;
-        int count;
-        int duration;
-
-        list.remove(0);
-
-        for (int i = 0; i < list.size(); i++) {
-            count = Integer.parseInt(list.get(i));
-            duration = count * pulses;
-            list.set(i, Integer.toString(duration));
-        }
-
-        String durationPattern = "";
-        for (String s : list) {
-            durationPattern += s + ",";
-        }
-
-        Log.d(LOG_TAG, "Frequency: " + frequency);
-        Log.d(LOG_TAG, "Duration Pattern: " + durationPattern);
-
-        return durationPattern;
-    }
 
     @Override
     public void onResume() {
         super.onResume();
         readApplicationPreferences();
-        mDisplay.setLevel(0, mThreshold);
-        if (mAutoResume) {
-            new ReadCurrentLevel().execute();
-        }
     }
 
     @Override
@@ -253,60 +167,6 @@ public class MainActivity extends ActionBarActivity {
         stop();
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
-        switch(item.getItemId()) {
-            case R.id.settings:
-                Log.i(LOG_TAG, "settings");
-                Intent prefs = new Intent(this, AppPreferences.class);
-                startActivity(prefs);
-                break;
-            case R.id.start_stop:
-                if (!mRunning) {
-                    mAutoResume = true;
-                    mRunning = true;
-//                    start();
-                } else {
-                    mAutoResume = false;
-                    mRunning = false;
-                    stop();
-                }
-                break;
-            case R.id.test:
-//                start();
-                break;
-            case R.id.panic:
-//                callForHelp();
-                break;
-            case R.id.help:
-                Intent myIntent = new Intent();
-                myIntent.setClass(this, HelpActivity.class);
-                startActivity(myIntent);
-        }
-        return true;
-
-    }
-
-    public void receive(String cmd) {
-        if (cmd == "start" & !mRunning) {
-        } else if (cmd == "stop" & mRunning) {
-            mAutoResume = false;
-            mRunning = false;
-            stop();
-        }
-    }
 
     private Runnable mPollTask = new Runnable() {
         public void run() {
@@ -363,11 +223,15 @@ public class MainActivity extends ActionBarActivity {
         if (mWakeLock.isHeld()) {
             mWakeLock.release();
         }
-        mHandler.removeCallbacks(mSleepTask);
-        mHandler.removeCallbacks(mPollTask);
+        if(mHandler != null){
+            mHandler.removeCallbacks(mSleepTask);
+            mHandler.removeCallbacks(mPollTask);
+        }
         mSensor.stop();
-        mDisplay.setLevel(0,0);
-        updateDisplay(0.0);
+        if(mDisplay != null){
+            mDisplay.setLevel(0,0);
+            updateDisplay(0.0);
+        }
         setActivityLed(false);
         mRunning = false;
     }
@@ -405,6 +269,9 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         protected void onPreExecute() {
+            // Setup level meter
+            mDisplay = (SoundLevelView) findViewById(R.id.volume);
+            mDisplay.setLevel(0, mThreshold);
         }
 
         @Override
@@ -437,12 +304,12 @@ public class MainActivity extends ActionBarActivity {
                     }
                     // Set to 10 seconds
                     Log.i(LOG_TAG, String.format("Setting level :: count: [%d] :: Sum: [%f] :: Amplitude: [%f]", count, summedAmplitude, thisAmplitude));
-                    if(count++ == 10){
+                    if(count++ == SAMPLE_TIME){
                         notSet = false;
                     }
                 }
-                // Get average amplitude over "count - 1" seconds (count will have been incremented post operation above)
-                mThreshold = summedAmplitude / (count - 1);
+                // Evaluate sample time
+                mThreshold = summedAmplitude / SAMPLE_TIME;
                 // Show threshold in the view
                 Log.i(LOG_TAG, String.format("Max Amp: [%f] ::: Av Amp: [%f]", mThresholdMax, mThreshold));
             }
@@ -463,6 +330,144 @@ public class MainActivity extends ActionBarActivity {
             mThresholdView.setText(String.valueOf(threshold));
             mHandler.postDelayed(mPollTask, POLL_INTERVAL);
         }
+    }
+
+    public void irSend(View view) {
+        irSend(view.getId());
+    }
+
+    public void irSend(int irDataIndex) {
+
+        if (!mCIR.hasIrEmitter()) {
+            Log.e(LOG_TAG, "No IR Emitter found\n");
+            return;
+        }
+
+        String data = irData.get(irDataIndex);
+        int lastIdx = Build.VERSION.RELEASE.lastIndexOf(".");
+        int VERSION_MR = Integer.valueOf(Build.VERSION.RELEASE.substring(lastIdx+1));
+        if (VERSION_MR < 3) {
+            // Before version of Android 4.4.2
+            data = hex2dec(data);
+        } else {
+            // Later version of Android 4.4.3
+            data = count2duration(hex2dec(data));
+        }
+        if (data != null) {
+            String values[] = data.split(",");
+            int[] pattern = new int[values.length-1];
+            int frequency = Integer.parseInt(values[0]);
+
+            //@todo Start index at 1??
+            for (int i=0; i<pattern.length; i++){
+                pattern[i] = Integer.parseInt(values[i+1]);
+            }
+            mCIR.transmit(frequency, pattern);
+        }
+
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+
+        switch(item.getItemId()) {
+            case R.id.settings:
+                Log.i(LOG_TAG, "settings");
+                Intent prefs = new Intent(this, AppPreferences.class);
+                startActivity(prefs);
+                break;
+            case R.id.start_stop:
+                if (!mRunning) {
+                    mAutoResume = true;
+                    mRunning = true;
+//                    start();
+                } else {
+                    mAutoResume = false;
+                    mRunning = false;
+                    stop();
+                }
+                break;
+            case R.id.test:
+//                start();
+                break;
+            case R.id.panic:
+//                callForHelp();
+                break;
+            case R.id.help:
+                Intent myIntent = new Intent();
+                myIntent.setClass(this, HelpActivity.class);
+                startActivity(myIntent);
+        }
+        return true;
+
+    }
+
+    public void receive(String cmd) {
+        if (cmd == "start" & !mRunning) {
+        } else if (cmd == "stop" & mRunning) {
+            mAutoResume = false;
+            mRunning = false;
+            stop();
+        }
+    }
+
+    protected String hex2dec(String irData) {
+        List<String> list = new ArrayList<String>(Arrays.asList(irData
+                .split(" ")));
+        list.remove(0); // dummy
+        int frequency = Integer.parseInt(list.remove(0), 16); // frequency
+        list.remove(0); // seq1
+        list.remove(0); // seq2
+
+        for (int i = 0; i < list.size(); i++) {
+            list.set(i, Integer.toString(Integer.parseInt(list.get(i), 16)));
+        }
+
+        frequency = (int) (1000000 / (frequency * 0.241246));
+        list.add(0, Integer.toString(frequency));
+
+        irData = "";
+        for (String s : list) {
+            irData += s + ",";
+        }
+        return irData;
+    }
+
+    protected String count2duration(String countPattern) {
+        List<String> list = new ArrayList<String>(Arrays.asList(countPattern.split(" ")));
+        int frequency = Integer.parseInt(list.get(0));
+        int pulses = 1000000/frequency;
+        int count;
+        int duration;
+
+        list.remove(0);
+
+        for (int i = 0; i < list.size(); i++) {
+            count = Integer.parseInt(list.get(i));
+            duration = count * pulses;
+            list.set(i, Integer.toString(duration));
+        }
+
+        String durationPattern = "";
+        for (String s : list) {
+            durationPattern += s + ",";
+        }
+
+        Log.d(LOG_TAG, "Frequency: " + frequency);
+        Log.d(LOG_TAG, "Duration Pattern: " + durationPattern);
+
+        return durationPattern;
     }
 
 }

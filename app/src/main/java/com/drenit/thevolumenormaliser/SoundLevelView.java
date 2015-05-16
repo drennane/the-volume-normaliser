@@ -52,6 +52,7 @@ class SoundLevelView extends View {
         
         mLinePaint = new Paint();
         mLinePaint.setColor(Color.WHITE);
+        mLinePaint.setStrokeWidth(5);
 	}
 	
 	public void setLevel(int volume, double threshold) {
@@ -65,7 +66,7 @@ class SoundLevelView extends View {
 	public void onDraw(Canvas canvas) {
 		canvas.drawPaint(mBackgroundPaint);
 		float pos = (float) ((11 - mThreshold) * mHeight);
-		canvas.drawLine(0, pos, mWidth, pos, mLinePaint);
+		canvas.drawLine(5, pos, mWidth, pos, mLinePaint);
 		for (int i=0; i<= mVol; i++) {
 			Drawable bar;
 			if (i<mThreshold) bar = mGreen;
