@@ -10,6 +10,6 @@ public class HelpActivity extends Activity {
 
         // Set the layout for this activity.  You can find it
         // in res/layout/help.xml
-//        setContentView(R.layout.help);
+        setContentView(R.layout.help);
     }
 }
