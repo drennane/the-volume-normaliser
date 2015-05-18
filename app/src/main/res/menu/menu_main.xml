@@ -1,9 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
-    <item android:title="@string/start" android:id="@+id/start_stop" android:icon="@android:drawable/ic_menu_view"></item>
-    <item android:title="@string/test" android:id="@+id/test" android:icon="@android:drawable/ic_menu_sort_by_size"></item>
-    <item android:title="@string/panic" android:id="@+id/panic" android:icon="@android:drawable/ic_menu_call"></item>
-    <item android:title="@string/help" android:icon="@android:drawable/ic_menu_help" android:id="@+id/help"/>
     <item android:title="@string/settings" android:id="@+id/settings" android:icon="@android:drawable/ic_menu_preferences"></item>
+    <item android:title="@string/help" android:icon="@android:drawable/ic_menu_help" android:id="@+id/help"/>
 </menu>

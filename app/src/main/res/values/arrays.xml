@@ -16,33 +16,9 @@
  -->
 
 <resources>
-    <string-array name="entries_threshold">
-        <item>9</item>
-        <item>8</item>
-        <item>7</item>  
-        <item>6</item>
-        <item>5</item>
-        <item>4</item>
-        <item>3</item>
-        <item>2</item>
-        <item>1</item>    
+    <string-array name="tv_setting">
+        <item>Samsung</item>
+        <item>Logik</item>
     </string-array>
     
-    <string-array name="entries_sleep">
-    	<item>continuous</item>
-        <item>30s</item>
-        <item>1min</item>
-        <item>2min</item>
-        <item>3min</item>
-        <item>5min</item>
-    </string-array>
-
-   <string-array name="values_sleep">
-    	<item>0</item>
-        <item>30</item>
-        <item>60</item>
-        <item>120</item>
-        <item>180</item>
-        <item>300</item>
-    </string-array>
 </resources>

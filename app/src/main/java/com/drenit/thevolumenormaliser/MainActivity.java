@@ -23,20 +23,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 
 public class MainActivity extends ActionBarActivity {
 
-    private static final int ANDROID_KITKAT_SDK = 19;
-    private static final int SAMPLE_TIME = 10;
 
-    SparseArray<String> irData;
+    private SparseArray<String> irData;
+    private static final List<Integer> BUTTON_ORDER = Arrays.asList(R.id.buttonPower, R.id.buttonMute, R.id.buttonChUp, R.id.buttonChDown, R.id.buttonVolUp, R.id.buttonVolDown);
 
     /* constants */
     private static final String LOG_TAG = "MainActivity";
     private static final int POLL_INTERVAL = 500;
     private static final int PRESET_TOLERANCE_PERCENTAGE = 50;
+    private static final int ANDROID_KITKAT_SDK = 19;
+    private static final int SAMPLE_TIME = 10;
 
     /** running state **/
     private boolean mAutoResume = false;
@@ -54,6 +54,7 @@ public class MainActivity extends ActionBarActivity {
     private double mThreshold;
     private double mThresholdMax;
     private int mPollDelay;
+    private static AsyncTask mLevelReader;
 
     private PowerManager.WakeLock mWakeLock;
 
@@ -81,42 +82,6 @@ public class MainActivity extends ActionBarActivity {
         mCIR = (ConsumerIrManager) getSystemService(Context.CONSUMER_IR_SERVICE);
         Log.e(LOG_TAG, "mCIR.hasIrEmitter(): " + mCIR.hasIrEmitter());
 
-        irData = new SparseArray<>();
-        irData.put(
-                R.id.buttonPower,
-//  Samsung
-                "0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0040 0015 0015 0015 003f 0015 003f 0015 003f 0015 003f 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e");
-// Logik                hex2dec("0000 006C 0022 0002 015B 00AD 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0016 0016 0016 0016 0041 0016 0041 0016 0041 0016 0016 0016 0016 0016 0016 0016 0041 0016 0041 0016 0016 0016 0016 0016 0016 0016 0041 0016 0041 0016 0041 0016 0699 015B 0057 0016 0EA3"));
-        irData.put(
-                R.id.buttonMute,
-//Samsung
-                "0000 006c 0022 0003 00ab 00aa 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 003f 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0714 00ab 00aa 0015 0015 0015 0e91");
-// Logik                hex2dec("0000 006C 0022 0002 015B 00AD 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0699 015B 0057 0016 0EA3"));
-        irData.put(
-                R.id.buttonChUp,
-// Samsung
-                "0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 0015 0015 003f 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 003f 0015 003f 0015 0015 0015 0040 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e");
-// Logik               hex2dec("0000 006C 0022 0002 015B 00AD 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0699 015B 0057 0016 0EA3"));
-
-        irData.put(
-                R.id.buttonChDown,
-// Samsung
-                "0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 003f 0015 0015 0015 003f 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e");
-//Logik               hex2dec("0000 006C 0022 0002 015B 00AD 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0041 0016 0041 0016 0699 015B 0057 0016 0EA3"));
-
-        irData.put(
-                R.id.buttonVolUp,
-// Samsung
-                "0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e");
-//Logik                hex2dec("0000 006C 0022 0002 015B 00AD 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0699 015B 0057 0016 0EA3"));
-
-        irData.put(
-                  R.id.buttonVolDown,
-// Samsung
-                  "0000 006d 0022 0003 00a9 00a8 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 003f 0015 0015 0015 003f 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 0015 003f 0015 0015 0015 003f 0015 003f 0015 003f 0015 003f 0015 0702 00a9 00a8 0015 0015 0015 0e6e");
-//Logik                hex2dec("0000 006C 0022 0002 015B 00AD 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0041 0016 0016 0016 0041 0016 0041 0016 0041 0016 0016 0016 0041 0016 0016 0016 0016 0016 0041 0016 0016 0016 0016 0016 0016 0016 0041 0016 0016 0016 0041 0016 0699 015B 0057 0016 0EA3"));
-
-
         mActivityLed = (ImageView) findViewById(R.id.activity_led);
         mThresholdView = (TextView) findViewById(R.id.threshold);
 
@@ -140,19 +105,27 @@ public class MainActivity extends ActionBarActivity {
             }
             Log.i(LOG_TAG, "LOCKING VOLUME LEVEL..");
 //            start();
-            new ReadCurrentLevel().execute();
+            if(!mRunning){
+                mLevelReader = new ReadCurrentLevel().execute();
+            }
         }
     };
 
     View.OnClickListener mClearListener = new View.OnClickListener() {
         public void onClick(View v) {
-            mThreshold = 0;
-            mThresholdSet = false;
-            mThresholdView.setText("");
-            stop();
-            Log.i(LOG_TAG, "RESET..");
+            reset();
         }
     };
+
+    void reset(){
+        mThreshold = 0;
+        mThresholdSet = false;
+        mThresholdView.setText("");
+        stop();
+        if(mLevelReader != null)
+            mLevelReader.cancel(false);
+        Log.i(LOG_TAG, "RESET..");
+    }
 
 
     @Override
@@ -245,10 +218,24 @@ public class MainActivity extends ActionBarActivity {
 
     private void readApplicationPreferences() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        mThreshold = Integer.parseInt(prefs.getString("threshold", null));
-        Log.i(LOG_TAG, "threshold=" + mThreshold);
-        mPollDelay = Integer.parseInt(prefs.getString("sleep", null));
-        Log.i(LOG_TAG, "sleep=" + mPollDelay);
+        String tvSelection = prefs.getString("tv_setting_selection", null);
+        // Load the Array with the TV selection:
+        String codes = getStringResourceByName(tvSelection);
+        String[] codesArray = codes.split(":");
+        // Clear the contents of the irData SparseArray
+        irData = new SparseArray<>();
+        // Now add the values from above
+        for(int i = 0; i < BUTTON_ORDER.size(); i++){
+            irData.put(BUTTON_ORDER.get(i), codesArray[i]);
+
+        }
+        Log.i(LOG_TAG, "chosen TV=" + tvSelection);
+    }
+
+    private String getStringResourceByName(String aString) {
+        String packageName = getPackageName();
+        int resId = getResources().getIdentifier(aString, "string", packageName);
+        return getString(resId);
     }
 
     private void updateDisplay(double signalEMA) {
@@ -265,13 +252,18 @@ public class MainActivity extends ActionBarActivity {
         }
     };
 
-    private class ReadCurrentLevel extends AsyncTask<Void, Void, Double> {
+    private class ReadCurrentLevel extends AsyncTask<Void, Double, Double> {
 
         @Override
         protected void onPreExecute() {
+            mThresholdView.setText("Sampling noise level...");
             // Setup level meter
             mDisplay = (SoundLevelView) findViewById(R.id.volume);
-            mDisplay.setLevel(0, mThreshold);
+            // Setting the threshold to 10 will make the progress
+            // indicator show green bars for ambiance level sampling
+            mThreshold = 12;
+            updateDisplay(0);
+            mRunning = true;
         }
 
         @Override
@@ -304,9 +296,11 @@ public class MainActivity extends ActionBarActivity {
                     }
                     // Set to 10 seconds
                     Log.i(LOG_TAG, String.format("Setting level :: count: [%d] :: Sum: [%f] :: Amplitude: [%f]", count, summedAmplitude, thisAmplitude));
-                    if(count++ == SAMPLE_TIME){
+                    if(isCancelled() || count++ == SAMPLE_TIME){
                         notSet = false;
                     }
+                    publishProgress(Double.valueOf(count));
+
                 }
                 // Evaluate sample time
                 mThreshold = summedAmplitude / SAMPLE_TIME;
@@ -320,8 +314,9 @@ public class MainActivity extends ActionBarActivity {
         }
 
         @Override
-        protected void onProgressUpdate(Void... values) {
+        protected void onProgressUpdate(Double... progress) {
             // Update info
+            updateDisplay(progress[0]);
         }
 
         @Override
@@ -329,6 +324,13 @@ public class MainActivity extends ActionBarActivity {
             setActivityLed(true);
             mThresholdView.setText(String.valueOf(threshold));
             mHandler.postDelayed(mPollTask, POLL_INTERVAL);
+            mRunning = false;
+        }
+
+        @Override
+        protected void onCancelled(Double threshold) {
+            updateDisplay(0);
+            mRunning = false;
         }
     }
 
@@ -384,25 +386,8 @@ public class MainActivity extends ActionBarActivity {
         switch(item.getItemId()) {
             case R.id.settings:
                 Log.i(LOG_TAG, "settings");
-                Intent prefs = new Intent(this, AppPreferences.class);
+                Intent prefs = new Intent(this, SettingsActivity.class);
                 startActivity(prefs);
-                break;
-            case R.id.start_stop:
-                if (!mRunning) {
-                    mAutoResume = true;
-                    mRunning = true;
-//                    start();
-                } else {
-                    mAutoResume = false;
-                    mRunning = false;
-                    stop();
-                }
-                break;
-            case R.id.test:
-//                start();
-                break;
-            case R.id.panic:
-//                callForHelp();
                 break;
             case R.id.help:
                 Intent myIntent = new Intent();
@@ -411,15 +396,6 @@ public class MainActivity extends ActionBarActivity {
         }
         return true;
 
-    }
-
-    public void receive(String cmd) {
-        if (cmd == "start" & !mRunning) {
-        } else if (cmd == "stop" & mRunning) {
-            mAutoResume = false;
-            mRunning = false;
-            stop();
-        }
     }
 
     protected String hex2dec(String irData) {

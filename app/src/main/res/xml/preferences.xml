@@ -19,38 +19,14 @@
         xmlns:android="http://schemas.android.com/apk/res/android">
         
         <PreferenceCategory
-        	android:title="@string/alert_heading">
-        	<EditTextPreference
-                android:key="alert_phone_number"
-                android:title="@string/alert_phone"
-                android:summary="@string/alert_phone_summary"
-                android:dialogTitle="@string/alert_phone" 
-                android:defaultValue="" />
-                
+        	android:title="@string/tv_heading" android:key="tv">
         	<ListPreference
-                android:key="threshold"
-                android:title="@string/sound_threshold"
-                android:summary="@string/sound_threshold_summary"
-                android:entries="@array/entries_threshold"
-                android:entryValues="@array/entries_threshold"
-                android:dialogTitle="@string/threshold" 
-                android:defaultValue="0" />
-            <EditTextPreference
-                android:key="sms_security_code"
-                android:title="@string/security_code"
-                android:summary="@string/security_code_summary"
-                android:dialogTitle="@string/security_code" 
-                android:defaultValue="" />
-        </PreferenceCategory>        
-        <PreferenceCategory
-        	android:title="@string/power_heading">
-        	<ListPreference
-                android:key="sleep"
-                android:title="@string/sleep"
-                android:summary="@string/sleep_summary"
-                android:entries="@array/entries_sleep"
-                android:entryValues="@array/values_sleep"
-                android:dialogTitle="@string/sleep" 
+                android:key="tv_setting_selection"
+                android:title="@string/tv_select"
+                android:summary="@string/tv_select_summary"
+                android:entries="@array/tv_setting"
+                android:entryValues="@array/tv_setting"
+                android:dialogTitle="@string/tv_select"
                 android:defaultValue="0" />
     	</PreferenceCategory>
 </PreferenceScreen>
