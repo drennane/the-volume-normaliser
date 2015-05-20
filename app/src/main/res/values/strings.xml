@@ -14,48 +14,19 @@
     <string name="tv_select_summary">Choose TV model you wish to control with the Volume Normaliser</string>
     <string name="ok">ok</string>
     <string name="help_title">The Volume Normaliser Help</string>
-    <string name="help_text">
-    \n
-    \n<big><b>NoiseAlert</b> travel baby monitor</big>\n
-    \n
-    In combination with a second phone, NoiseAlert can turn an Android cellphone into an improvised baby monitor.
-    When running, NoiseAlert monitors the surrounding noise level through the microphone and if the noise exceeds a
-    configured threshold for more than a few seconds, it calls a pre-configured number.\n
-    \n
-    <b>Usage</b>\n
-    In order to use NoiseAlert, first configure the correct alert phone number to be called in \"Settings->
-    Alert Phone Number\" and test that it will indeed ring the right phone, but selecting \"Panic\" from the menu.
-    Then turn down the ringer volume until it switches into silent mode, to avoid incoming ring or alerts
-    setting off the monitor - or disturb a sleeping baby. The place the monitor at a safe distance, but in the
-    same room with the sleeping child, dog or whatever it is you are trying to monitor. Ideally put the phone on
-    charger, since running the monitor will keep the phone awake. If necessary use the \"Test\" menu option to verify
-    that the current ambient noise level does not set off the alert and if possibly adjust the threshold in
-    \"Settings->Sound Threshold\". The choose \"Start\" from the menu and verify that the red monitoring light
-    is blinking on the display before leaving the room.\n
-    \n
-    The monitor will automatically de-activate itself after an alert has been triggered or if the user navigates
-    away from the main screen, while the monitor is running. The monitor can also be de-activated using the
-    \"Stop\" option from the menu.\n
-    \n
-    <b>Warning</b>\n
-    Please be aware that cellphone service can be unreliable at times, this application or the phone in general
-    could easily malfunction. It should only be used when such failures can be tolerated without causing any
-    serious danger.\n
-    Please be also aware that there is a reason why commercial wireless baby monitors only have a short enough
-    reach, that you would not really need them. Before going to far from an unattended child, always consider
-    some worst-case scenario like fire breaking out in the building or a power outage. Depending on the situation,
-    only go as far as you could get back very quickly in any situation, e.g. even if the elevators are no
-    longer working.\n
- 	\n
- 	<b>SMS remote control</b> (experimental only)\n
- 	By setting a \"secret\" password code in \"Settings->SMS Remote Security Code\", you can activate a limited
- 	SMS based remote control function which is active only when the application is running. If you send an SMS to
- 	the phone, starting with the security code, followed by either of the commands \"start\", \"stop\", \"panic\",
- 	the equivalent menu command is executed.
-    \n
-    More information, including the source code can be found at http://android-labs.googlecode.com/\n
-    \n
-    For any comments or questions please contact android@kugelfish.com\n
+    <string name="help_text">\n<big><b>The Volume Normaliser</b>\nPut away your remote</big>\n
+    \nGetting sick of the loud adverts or news reports when your dozing off in bed with the TV on?
+    Wouldn\'t it be cool if something just \"looked after\" this problem for you..?
+    \nIntroducing, the Volume Normaliser
+    \n\n<b>Usage</b>
+    \nThe following steps outline how to get this simple app doing what it does\n
+    <li>Start the app</li>\n
+    <li>From the setting menu, choose your TV maker (Sony/Samsung/LG etc)</li>\n
+    <li>Using the app, set your desired volume but only when watching the programme you wish to view,\n do not do so during an ad break or news report.</li>\n
+    <li>Hit the \"lock level\" button and let the app do the rest.</li>\n
+    \n\n<b>The science</b>\nThe application spends a set period of time sampling the ambient noise the room. To do this, it uses the phones microphone.\nObviously, if there is any other noise in the room at the time of sampling, the test is flawed as an appropriate
+    ambient level will not be properly determined. \nSo, in other words, wait until she\'s finished drying her hair before use.
+
     \n
     Enjoy!\n
     </string>
